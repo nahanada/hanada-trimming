@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hanada-trimming-v2';
+const CACHE_NAME = 'hanada-trimming-v3';
 
 const ASSETS_TO_CACHE = [
   './',
