@@ -103,6 +103,7 @@
       display: flex;
       align-items: center;
       width: 100%;
+      touch-action: manipulation;
       margin-top: 5px;
     }
     .zoom-control input { width: 100%; }
@@ -360,25 +361,28 @@
 
     function handleTouchMove(e) {
       if (!loadedImg) return;
-      if (e.cancelable) e.preventDefault();
-
+      
+      if (e.target.closest('#previewWrapper') && e.cancelable) {
+          e.preventDefault();
+      }
+  
       if (e.touches.length === 1 && isDragging) {
-        moveDrag(e);
+          moveDrag(e);
       } else if (e.touches.length === 2 && initialPinchDistance) {
-        const currentDistance = Math.hypot(
+          const currentDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
-        );
-        
-        const zoomFactor = currentDistance / initialPinchDistance;
-        let targetScale = imgState.scale * zoomFactor;
-        
-        const maxScale = parseFloat(zoomRange.max);
-        if (targetScale < minScale) targetScale = minScale;
-        if (targetScale > maxScale) targetScale = maxScale;
-
-        setScale(targetScale);
-        initialPinchDistance = currentDistance;
+          );
+          
+          const zoomFactor = currentDistance / initialPinchDistance;
+          let targetScale = imgState.scale * zoomFactor;
+          
+          const maxScale = parseFloat(zoomRange.max);
+          if (targetScale < minScale) targetScale = minScale;
+          if (targetScale > maxScale) targetScale = maxScale;
+  
+          setScale(targetScale);
+          initialPinchDistance = currentDistance;
       }
     }
 
