@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>はなだトリミング - IRIAM用アイコン・ヘッダー連結トリミングツール</title>
+
+  <!-- OGP & Meta -->
+  <meta name="description" content="IRIAMのアイコンとヘッダー画像がぴったり繋がるようにトリミングができるWebツールです。">
+  <meta property="og:url" content="https://nahanada.github.io/hanada-trimming/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="はなだトリミング - IRIAM用アイコン・ヘッダー連結トリミングツール">
+  <meta property="og:description" content="IRIAMのアイコンとヘッダー画像がぴったり繋がるようにトリミングができるWebツールです。">
+  <meta property="og:image" content="Kame-Shiro-Noir.jpg">
+
+  <!-- Twitter (X) Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="はなだトリミング - IRIAM用アイコン・ヘッダー連結トリミングツール">
+  <meta name="twitter:description" content="IRIAMのアイコンとヘッダー画像がぴったり繋がるようにトリミングができるWebツールです。">
+  <meta name="twitter:image" content="Kame-Shiro-Noir.jpg">
+
+  <!-- Favicon & Apple Touch Icon -->
+  <link rel="icon" href="Kame-Shiro-Noir.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="Kame-Shiro-Noir.jpg">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2792c3">
+
+  <style>
+    :root {
+      --primary-color: #2792c3;
+      --primary-hover: #1d769f;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: #333;
+      padding-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      width: 100%;
+      background-color: var(--primary-color);
+      color: #ffffff;
+      padding: 10px 15px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h2.title { font-size: 1.5rem; color: #ffffff; font-weight: bold; }
+    
+    p.sub {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 20px;
+      max-width: 800px;
+      width: calc(100% - 20px);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      padding-bottom: 3px;
+    }
+    .file-btn {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px 30px;
+      min-width: 210px;
+      text-align: center;
+      border-radius: 15px;
+      font-size: 1.35rem;
+      cursor: pointer;
+      font-weight: bold;
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+    .file-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    input[type="file"] { display: none; }
+
+    .zoom-control {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-top: 5px;
+    }
+    .zoom-control input { width: 100%; }
+
+    .preview-wrapper {
+      position: relative;
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      touch-action: none;
+      cursor: grab;
+    }
+    .preview-wrapper:active { cursor: grabbing; }
+    canvas#previewCanvas { display: block; width: 100%; height: auto; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-download { background-color: #25d366; color: white; }
+    .btn-secondary { background-color: var(--primary-color); color: white; }
+    .btn:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
+
+    footer { margin-top: 30px; font-size: 0.8rem; color: #888; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2 class="title">はなだトリミング</h2>
+  </header>
+
+  <p class="sub">IRIAMのアイコンとヘッダーが繋がるトリミングツール</p>
+
+  <div class="container">
+    <div class="controls">
+      <label class="file-btn">
+        画像を選択
+        <input type="file" id="imageInput" accept="image/*">
+      </label>
+    </div>
+
+    <!-- Canvasプレビュー -->
+    <div class="preview-wrapper" id="previewWrapper">
+      <canvas id="previewCanvas" width="1125" height="600"></canvas>
+    </div>
+
+    <!-- 拡大縮小スライダー -->
+    <div class="zoom-control">
+      <input type="range" id="zoomRange" min="1" max="3" step="0.001" value="1" disabled>
+    </div>
+
+    <p style="font-size:0.8rem; color:#666; text-align:center;">
+      ※画像をドラッグで移動、ホイール・ピンチ操作で拡大縮小できます。
+    </p>
+
+    <div class="actions">
+      <!-- <button class="btn btn-download" id="dlAllBtn" disabled>一括保存（ヘッダー＆アイコン）</button> -->
+      <button class="btn btn-secondary" id="dlHeaderBtn" disabled>ヘッダー保存</button>
+      <button class="btn btn-secondary" id="dlIconBtn" disabled>アイコン保存</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; はなだトリミング (hanada-trimming)</p>
+  </footer>
+
+  <script>
+    // --- IRIAM確定パラメータ ---
+    const HEADER_W = 1125;
+    const HEADER_H = 480;
+    const ICON_OUTPUT_SIZE = 513;
+    
+    const ICON_CENTER_X = 562.5;
+    const ICON_CENTER_Y = 315;
+    const ICON_HEADER_DIAMETER = 450;
+
+    const ICON_CROP_X = ICON_CENTER_X - (ICON_HEADER_DIAMETER / 2);
+    const ICON_CROP_Y = ICON_CENTER_Y - (ICON_HEADER_DIAMETER / 2);
+    const CANVAS_H = 600;
+
+    // DOM要素
+    const imageInput = document.getElementById('imageInput');
+    const zoomRange = document.getElementById('zoomRange');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const ctx = previewCanvas.getContext('2d');
+    const dlAllBtn = document.getElementById('dlAllBtn');
+    const dlHeaderBtn = document.getElementById('dlHeaderBtn');
+    const dlIconBtn = document.getElementById('dlIconBtn');
+    const wrapper = document.getElementById('previewWrapper');
+
+    let loadedImg = null;
+    let imgState = { x: 0, y: 0, scale: 1 };
+    let minScale = 1;
+    let isDragging = false;
+    let startCoords = { x: 0, y: 0 };
+    let initialPinchDistance = null;
+
+    drawPreview();
+
+    // 画像選択時の処理
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedImg = img;
+          
+          minScale = Math.max(HEADER_W / img.width, HEADER_H / img.height);
+          
+          imgState.scale = minScale;
+          imgState.x = (HEADER_W - img.width * minScale) / 2;
+          imgState.y = (HEADER_H - img.height * minScale) / 2;
+
+          zoomRange.min = minScale.toFixed(4);
+          zoomRange.max = (minScale * 3.0).toFixed(4);
+          zoomRange.value = minScale;
+          zoomRange.disabled = false;
+
+          clampPosition();
+
+          if (dlAllBtn) dlAllBtn.disabled = false;
+          dlHeaderBtn.disabled = false;
+          dlIconBtn.disabled = false;
+
+          drawPreview();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 拡大スライダー変更処理
+    zoomRange.addEventListener('input', (e) => {
+      if (!loadedImg) return;
+      setScale(parseFloat(e.target.value));
+    });
+
+    // スケール変更の一括処理
+    function setScale(newScale) {
+      if (!loadedImg) return;
+      const oldScale = imgState.scale;
+      const centerX = HEADER_W / 2;
+      const centerY = HEADER_H / 2;
+      
+      imgState.x = centerX - (centerX - imgState.x) * (newScale / oldScale);
+      imgState.y = centerY - (centerY - imgState.y) * (newScale / oldScale);
+      imgState.scale = newScale;
+
+      clampPosition();
+      zoomRange.value = imgState.scale;
+      drawPreview();
+    }
+
+    // マウスホイールによる拡大・縮小 (PC対応)
+    wrapper.addEventListener('wheel', (e) => {
+      if (!loadedImg) return;
+      e.preventDefault();
+      
+      const zoomFactor = e.deltaY < 0 ? 1.05 : 0.95;
+      let targetScale = imgState.scale * zoomFactor;
+      
+      const maxScale = parseFloat(zoomRange.max);
+      if (targetScale < minScale) targetScale = minScale;
+      if (targetScale > maxScale) targetScale = maxScale;
+
+      setScale(targetScale);
+    }, { passive: false });
+
+    // 位置・サイズのクランプ処理 (枠からはみ出さないように制限)
+    function clampPosition() {
+      if (!loadedImg) return;
+      
+      if (imgState.scale < minScale) {
+        imgState.scale = minScale;
+      }
+
+      const scaledW = loadedImg.width * imgState.scale;
+      const scaledH = loadedImg.height * imgState.scale;
+
+      if (imgState.x > 0) imgState.x = 0;
+      if (imgState.x < HEADER_W - scaledW) imgState.x = HEADER_W - scaledW;
+
+      if (imgState.y > 0) imgState.y = 0;
+      if (imgState.y < HEADER_H - scaledH) imgState.y = HEADER_H - scaledH;
+    }
+
+    // イベント座標の取得
+    function getEventPos(e) {
+      const rect = previewCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = HEADER_W / rect.width;
+      const scaleY = CANVAS_H / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    // ドラッグ＆タッチ操作 (ピンチズーム対応)
+    wrapper.addEventListener('mousedown', startDrag);
+    wrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+    function startDrag(e) {
+      if (!loadedImg) return;
+      isDragging = true;
+      const pos = getEventPos(e);
+      startCoords = { x: pos.x - imgState.x, y: pos.y - imgState.y };
+    }
+
+    function handleTouchStart(e) {
+      if (!loadedImg) return;
+      if (e.touches.length === 1) {
+        isDragging = true;
+        const pos = getEventPos(e);
+        startCoords = { x: pos.x - imgState.x, y: pos.y - imgState.y };
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        initialPinchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }
+
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    function moveDrag(e) {
+      if (!isDragging || !loadedImg) return;
+      const pos = getEventPos(e);
+      imgState.x = pos.x - startCoords.x;
+      imgState.y = pos.y - startCoords.y;
+      
+      clampPosition();
+      drawPreview();
+    }
+
+    function handleTouchMove(e) {
+      if (!loadedImg) return;
+      if (e.cancelable) e.preventDefault();
+
+      if (e.touches.length === 1 && isDragging) {
+        moveDrag(e);
+      } else if (e.touches.length === 2 && initialPinchDistance) {
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        
+        const zoomFactor = currentDistance / initialPinchDistance;
+        let targetScale = imgState.scale * zoomFactor;
+        
+        const maxScale = parseFloat(zoomRange.max);
+        if (targetScale < minScale) targetScale = minScale;
+        if (targetScale > maxScale) targetScale = maxScale;
+
+        setScale(targetScale);
+        initialPinchDistance = currentDistance;
+      }
+    }
+
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) initialPinchDistance = null;
+      if (e.touches.length === 0) isDragging = false;
+    });
+
+    // プレビュー描画処理
+    function drawPreview() {
+      ctx.clearRect(0, 0, HEADER_W, CANVAS_H);
+
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, HEADER_W, CANVAS_H);
+
+      if (loadedImg) {
+        ctx.save();
+        ctx.drawImage(
+          loadedImg,
+          imgState.x,
+          imgState.y,
+          loadedImg.width * imgState.scale,
+          loadedImg.height * imgState.scale
+        );
+        ctx.restore();
+      }
+
+      // --- 円の内部を除外してマスクと枠線を描画 ---
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, HEADER_W, CANVAS_H);
+      ctx.arc(ICON_CENTER_X, ICON_CENTER_Y, ICON_HEADER_DIAMETER / 2, 0, Math.PI * 2, true);
+      ctx.clip('evenodd');
+
+      // 1. ヘッダー下部のマスク（暗く表示）
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(0, HEADER_H, HEADER_W, CANVAS_H - HEADER_H);
+
+      // 2. ヘッダー境界線の枠
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, HEADER_W, HEADER_H);
+
+      ctx.restore();
+
+      // --- アイコン外枠の太い白単色リング描画 (太さ10px) ---
+      ctx.save();
+      ctx.beginPath();
+      const ringThickness = 10;
+      const ringRadius = (ICON_HEADER_DIAMETER / 2) + (ringThickness / 2);
+      ctx.arc(ICON_CENTER_X, ICON_CENTER_Y, ringRadius, 0, Math.PI * 2);
+      ctx.lineWidth = ringThickness;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function downloadHeaderImage() {
+      const canvas = document.createElement('canvas');
+      canvas.width = HEADER_W;
+      canvas.height = HEADER_H;
+      const outCtx = canvas.getContext('2d');
+      if (loadedImg) {
+        outCtx.drawImage(
+          loadedImg,
+          imgState.x,
+          imgState.y,
+          loadedImg.width * imgState.scale,
+          loadedImg.height * imgState.scale
+        );
+      }
+      downloadCanvasImage(canvas, 'iriam_header_hanada.png');
+    }
+
+    function downloadIconImage() {
+      const canvas = document.createElement('canvas');
+      canvas.width = ICON_OUTPUT_SIZE;
+      canvas.height = ICON_OUTPUT_SIZE;
+      const outCtx = canvas.getContext('2d');
+
+      if (loadedImg) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = ICON_HEADER_DIAMETER;
+        tempCanvas.height = ICON_HEADER_DIAMETER;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCtx.drawImage(
+          loadedImg,
+          imgState.x - ICON_CROP_X,
+          imgState.y - ICON_CROP_Y,
+          loadedImg.width * imgState.scale,
+          loadedImg.height * imgState.scale
+        );
+
+        outCtx.drawImage(tempCanvas, 0, 0, ICON_HEADER_DIAMETER, ICON_HEADER_DIAMETER, 0, 0, ICON_OUTPUT_SIZE, ICON_OUTPUT_SIZE);
+      }
+      downloadCanvasImage(canvas, 'iriam_icon_hanada.png');
+    }
+
+    function downloadCanvasImage(canvas, filename) {
+      const a = document.createElement('a');
+      a.download = filename;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    dlHeaderBtn.addEventListener('click', downloadHeaderImage);
+    dlIconBtn.addEventListener('click', downloadIconImage);
+    if (dlAllBtn) {
+      dlAllBtn.addEventListener('click', () => {
+        downloadHeaderImage();
+        setTimeout(downloadIconImage, 300);
+      });
+    }
+
+    // Service Worker の登録 (PWA用)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('SW Registered!', reg))
+          .catch(err => console.error('SW Register Failed!', err));
+      });
+    }
+  </script>
+</body>
+</html>
