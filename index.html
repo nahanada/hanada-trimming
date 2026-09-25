@@ -178,6 +178,12 @@
       <button class="btn btn-secondary" id="dlHeaderBtn" disabled>ヘッダー保存</button>
       <button class="btn btn-secondary" id="dlIconBtn" disabled>アイコン保存</button>
     </div>
+    <div id="outputArea" style="display: none; text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+      <p id="outputGuide" style="font-weight: bold; color: var(--primary-color); margin-bottom: 8px; font-size: 0.9rem;">
+        ※画像が保存されない場合はこちらから
+      </p>
+      <img id="outputImage" src="" alt="生成された画像" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+    </div>
   </div>
 
   <footer>
@@ -489,9 +495,19 @@
     }
 
     function downloadCanvasImage(canvas, filename) {
+      const dataUrl = canvas.toDataURL('image/png');
+
+      const outputArea = document.getElementById('outputArea');
+      const outputImage = document.getElementById('outputImage');
+      
+      outputImage.src = dataUrl;
+      outputArea.style.display = 'block';
+
+      outputArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
       const a = document.createElement('a');
       a.download = filename;
-      a.href = canvas.toDataURL('image/png');
+      a.href = dataUrl;
       a.click();
     }
 
