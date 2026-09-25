@@ -1,0 +1,21 @@
+{
+  "name": "はなだトリミング",
+  "short_name": "はなだトリミング",
+  "description": "IRIAMのアイコンとヘッダーが繋がるトリミングツール",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#2792c3",
+  "icons": [
+    {
+      "src": "Kame-Shiro-Noir.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "Kame-Shiro-Noir.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
