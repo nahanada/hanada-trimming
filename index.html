@@ -214,6 +214,9 @@
     let isDragging = false;
     let startCoords = { x: 0, y: 0 };
     let initialPinchDistance = null;
+    let loadedFileName = 'image';
+    
+    
 
     drawPreview();
 
@@ -221,7 +224,9 @@
     imageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
+    
+      loadedFileName = file.name.replace(/\.[^/.]+$/, "");
+    
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
@@ -233,18 +238,18 @@
           imgState.scale = minScale;
           imgState.x = (HEADER_W - img.width * minScale) / 2;
           imgState.y = (HEADER_H - img.height * minScale) / 2;
-
+    
           zoomRange.min = minScale.toFixed(4);
           zoomRange.max = (minScale * 3.0).toFixed(4);
           zoomRange.value = minScale;
           zoomRange.disabled = false;
-
+    
           clampPosition();
-
+    
           if (dlAllBtn) dlAllBtn.disabled = false;
           dlHeaderBtn.disabled = false;
           dlIconBtn.disabled = false;
-
+    
           drawPreview();
         };
         img.src = event.target.result;
@@ -455,7 +460,7 @@
           loadedImg.height * imgState.scale
         );
       }
-      downloadCanvasImage(canvas, 'iriam_header_hanada.png');
+      downloadCanvasImage(canvas, `${loadedFileName}_iriam_header.png`);
     }
 
     function downloadIconImage() {
@@ -463,13 +468,13 @@
       canvas.width = ICON_OUTPUT_SIZE;
       canvas.height = ICON_OUTPUT_SIZE;
       const outCtx = canvas.getContext('2d');
-
+    
       if (loadedImg) {
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = ICON_HEADER_DIAMETER;
         tempCanvas.height = ICON_HEADER_DIAMETER;
         const tempCtx = tempCanvas.getContext('2d');
-
+    
         tempCtx.drawImage(
           loadedImg,
           imgState.x - ICON_CROP_X,
@@ -477,10 +482,10 @@
           loadedImg.width * imgState.scale,
           loadedImg.height * imgState.scale
         );
-
+    
         outCtx.drawImage(tempCanvas, 0, 0, ICON_HEADER_DIAMETER, ICON_HEADER_DIAMETER, 0, 0, ICON_OUTPUT_SIZE, ICON_OUTPUT_SIZE);
       }
-      downloadCanvasImage(canvas, 'iriam_icon_hanada.png');
+      downloadCanvasImage(canvas, `${loadedFileName}_iriam_icon.png`);
     }
 
     function downloadCanvasImage(canvas, filename) {
